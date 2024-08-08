@@ -1,0 +1,140 @@
+---
+title: "Logistic regression model with Titanic dataset"
+author: "Rungrot Watthanakitkuson"
+date: "2024-08-03"
+output: pdf_document
+---
+
+# 1. Load packages
+```{r}
+library(conflicted)
+library(tidyverse)
+library(lattice)
+library(caret)
+```
+
+# 2. Read titanic.csv into RStudio
+```{r}
+titanic <- tibble(read_csv("titanic.csv"))
+```
+
+# 3. Data Preparation
+## 3.1 Remove body column
+```{r}
+titanic$body <- NULL
+```
+
+## 3.2 Add PassengerId column
+```{r}
+titanic <- tibble::rowid_to_column(titanic, "PassengerId")
+```
+
+## 3.3 Rename columns in titanic
+```{r}
+titanic <- titanic %>% 
+  mutate(Pclass = pclass,
+         Survived = survived,
+         Name = name,
+         Gender = sex,
+         Age = age,
+         SibSp = sibsp,
+         Parch = parch,
+         Ticket = ticket,
+         Fare = fare,
+         Cabin = cabin,
+         Embarked = embarked) %>%
+  select(PassengerId, Pclass,
+         Survived,
+         Name,
+         Gender,
+         Age,
+         SibSp,
+         Parch,
+         Ticket,
+         Fare,
+         Cabin,
+         Embarked)
+```
+
+## 3.4 Change data in Gender column
+```{r}
+titanic$Gender <- factor(titanic$Gender, 
+                         levels = c("male","female"))
+
+titanic$Survived <- factor(titanic$Survived, 
+                           levels = c(1,0),
+                           labels = c("Yes","No"))
+```
+
+## 3.5 Build checking missing values function for each dataset
+```{r}
+have_missing_values <- function(data) { 
+  ncol = 1
+  while(ncol <= ncol(data)) {
+    if (sum(is.na(data[ncol])) > 0) {
+      print(colnames(data[ncol]))
+      ncol <- ncol + 1 
+    } else {
+      ncol <- ncol + 1 
+    }
+  } 
+}
+```
+
+## 3.6 Check missing values in titanic
+```{r}
+have_missing_values(titanic)
+```
+
+## 3.7 Clean missing values
+```{r}
+clean_titanic <- titanic %>%
+                  drop_na()
+```
+
+# 4. Split Data
+## 4.1 Build train-test data spliting function
+```{r}
+train_test_split <- function(data) {
+  set.seed(0)
+  n <- nrow(data)
+  id <- sample(n, size = 0.8*n)
+  train_data <- data[id, ]
+  test_data <- data[-id, ]
+  return(list(train_data, test_data))
+}
+```
+
+```{r}
+split_data <- train_test_split(clean_titanic)
+```
+
+# 5. Train Data
+```{r}
+glm_model <- train(Survived ~ Gender + Age,
+                   data = split_data[[1]],
+                   method = "glm",
+                   family = "binomial")
+```
+
+```{r}
+summary(glm_model)
+```
+
+# 6. Scoring Model
+```{r}
+probSurvived <- predict(glm_model, newdata = split_data[[2]])
+```
+
+# 7. Model Evaluation
+```{r}
+confusionMatrix(probSurvived,
+                split_data[[2]]$Survived)
+```
+
+
+
+
+
+
+
