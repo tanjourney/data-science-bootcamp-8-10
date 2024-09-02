@@ -23,5 +23,5 @@ I learn a lot of stuff related to data science skills. This bootcamp has 10 spri
 3. 
 
 ## Contact Me
-You can find me on LinkedIn https://www.linkedin.com/in/tanjourney/
+LinkedIn: https://www.linkedin.com/in/tanjourney/
 Email: rungrot.watthanakitkuson@gmail.com
